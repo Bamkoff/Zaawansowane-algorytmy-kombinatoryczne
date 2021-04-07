@@ -70,19 +70,22 @@ def generate_tree(n: int):
     return root, edges_map
 
 
-def generate_random_graph(n: int):
+def generate_random_graph(n: int, log=False):
     root, graph = generate_tree(n)
-    print("root:", root)
-    print("tree:", graph)
+    if log:
+        print("root:", root)
+        print("tree:", graph)
 
     leaves = find_all_leaves(graph)
     rest = find_rest(graph, root)
-    print("leaves:", leaves)
-    print("rest:", rest)
+    if log:
+        print("leaves:", leaves)
+        print("rest:", rest)
 
     rand_leaf_index = random.randint(0, len(leaves) - 1)
     rand_leaf = leaves[rand_leaf_index]
-    print("rand_leaf:", rand_leaf)
+    if log:
+        print("rand_leaf:", rand_leaf)
     leaves.pop(rand_leaf_index)
 
     whole = rest + leaves
@@ -94,7 +97,8 @@ def generate_random_graph(n: int):
     for path in paths:
         path.pop(-1)
         path.pop(0)
-    print("paths:", paths)
+    if log:
+        print("paths:", paths)
 
     added_edges_number = random.randint(1, len(paths)) - 1
     counter = 0
@@ -113,8 +117,16 @@ def generate_random_graph(n: int):
         rand_edge_index = random.randint(0, len(rest) - 1)
         if rest[rand_edge_index] not in graph[root]:
             graph[root].append(rest[rand_edge_index])
-    print("graph:", graph)
-    return root, graph
+    if log:
+        print("graph:", graph)
+    graphs_capacity = {}
+    for key in graph.keys():
+        graphs_capacity[key] = []
+        for edge in graph[key]:
+            graphs_capacity[key].append(random.randint(1, 10))
+    if log:
+        print("graphs_capacity:", graphs_capacity)
+    return root, graph, graphs_capacity
 
 
 def get_nodes_string(node, edges):
@@ -124,13 +136,53 @@ def get_nodes_string(node, edges):
     return string
 
 
-def write_directed_graph_to_file(path, filename, root, graph):
+def write_directed_graph_to_file(path, filename, root, graph, graphs_capacity):
     with open(path + filename, 'w') as file:
         file.write(str(root) + ";")
         for node in graph.keys():
             file.write(get_nodes_string(node, graph[node]) + ";")
+        file.write("\n")
+        for node in graphs_capacity.keys():
+            file.write(get_nodes_string(node, graphs_capacity[node]) + ";")
+
+
+
+def read_directed_graph_from_file(path, filename):
+    with open(path + filename, 'r') as file:
+        graph = {}
+        root = -1
+        graphs_capacity = {}
+        str = file.readline()
+        if str != "" and str is not None:
+            graph_str = str.split(";")
+            graph_str.pop(-1)
+            root = int(graph_str[0])
+            for i in range(1, len(graph_str)):
+                edges_of_node = graph_str[i].split(" ")
+                graph[int(edges_of_node[0])] = []
+                if len(edges_of_node) > 1:
+                    for j in range(1, len(edges_of_node)):
+                        graph[int(edges_of_node[0])].append(int(edges_of_node[j]))
+        if str != "" and str is not None:
+            str = file.readline()
+            graph_str = str.split(";")
+            graph_str.pop(-1)
+            for i in graph_str:
+                capacities_of_node = i.split(" ")
+                key = int(capacities_of_node[0])
+                graphs_capacity[key] = []
+                if len(capacities_of_node) > 1:
+                    for j in range(1, len(capacities_of_node)):
+                        graphs_capacity[key].append(int(capacities_of_node[j]))
+        return root, graph, graphs_capacity
 
 
 if __name__ == '__main__':
-    root, graph = generate_random_graph(20)
-    write_directed_graph_to_file("", "graph.txt", root, graph)
+    root, graph, graphs_capacity = generate_random_graph(20)
+    print(root, graph)
+    print(graphs_capacity)
+    print()
+    write_directed_graph_to_file("", "graph.txt", root, graph, graphs_capacity)
+    root, graph, graphs_capacity = read_directed_graph_from_file("", "graph.txt")
+    print(root, graph)
+    print(graphs_capacity)
