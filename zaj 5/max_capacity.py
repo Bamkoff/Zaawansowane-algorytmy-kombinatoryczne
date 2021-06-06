@@ -1,10 +1,12 @@
 from generate_graph import read_directed_graph_from_file
 
 
-def get_goal(graph: dict):
-    for i in graph.keys():
-        if len(graph[i]) == 0:
-            return i
+def get_shortest_path(paths):
+    min_path = 0
+    for i in range(len(paths)):
+        if len(paths[min_path]) > len(paths[i]):
+            min_path = i
+    return min_path
 
 
 def get_max_capacity(graphs_capacity: dict):
@@ -57,7 +59,7 @@ def edmonds_karps_algorithm(root: int, graph: dict, graphs_capacity: dict, print
     if print_log:
         print("paths[0]:", paths)
     while paths:
-        path = paths[0]
+        path = paths[get_shortest_path(paths[:])]
         f_c_min = max_capacity
         current_node = root
         for i in range(1, len(path)):
@@ -71,12 +73,14 @@ def edmonds_karps_algorithm(root: int, graph: dict, graphs_capacity: dict, print
             f_c[(path[i], current_node)] = -f_c[(current_node, path[i])]
             current_node = path[i]
         paths = get_paths(graph, root, graphs_capacity, f_c)
+        if print_log:
+            print("paths[0]:", paths)
     return f_c
 
 
 if __name__ == "__main__":
-    r, gr, g_c = read_directed_graph_from_file("", "../zaj 5/graph.txt")
+    r, gr, g_c = read_directed_graph_from_file("", "graph.txt")
     print("root:", r)
     print("directed graph", gr)
     print("edges capacities:", g_c)
-    print("Maximal capacity", edmonds_karps_algorithm(r, gr, g_c, False))
+    print("Maximal capacity:", edmonds_karps_algorithm(r, gr, g_c, False))

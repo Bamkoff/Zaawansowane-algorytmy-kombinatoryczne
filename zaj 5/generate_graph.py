@@ -70,9 +70,22 @@ def generate_tree(n: int):
     return root, edges_map
 
 
+def check_if_path(graph:dict):
+    count = 0
+    for key in graph.keys():
+        if len(graph[key]) > 1:
+            count += 1
+    if count > 2:
+        return False
+    return True
+
+
 def generate_random_graph(n: int, log=False):
     root, graph = generate_tree(n)
+    while check_if_path(graph):
+        root, graph = generate_tree(n)
     if log:
+        print(graph)
         print("root:", root)
         print("tree:", graph)
 
@@ -100,7 +113,9 @@ def generate_random_graph(n: int, log=False):
     if log:
         print("paths:", paths)
 
-    added_edges_number = random.randint(1, len(paths)) - 1
+    added_edges_number = random.randint(1, len(paths))
+    if len(paths) == 1:
+        added_edges_number = 0
     counter = 0
     while counter < added_edges_number:
         x, y = random.randint(0, len(whole)-1), random.randint(0, len(whole)-1)
@@ -108,10 +123,11 @@ def generate_random_graph(n: int, log=False):
         for path in paths:
             if whole[x] in path and whole[y] in path:
                 flag = False
+        if whole[x] in graph[whole[y]] or whole[y] in graph[whole[x]]:
+            flag = False
         if flag:
-            if whole[y] not in graph[whole[x]]:
-                graph[whole[x]].append(whole[y])
-                counter += 1
+            graph[whole[x]].append(whole[y])
+            counter += 1
 
     while len(graph[root]) < 2:
         rand_edge_index = random.randint(0, len(rest) - 1)
@@ -177,11 +193,15 @@ def read_directed_graph_from_file(path, filename):
 
 
 if __name__ == '__main__':
-    root, graph, graphs_capacity = generate_random_graph(8)
-    print(root, graph)
-    print(graphs_capacity)
+    root, graph, graphs_capacity = generate_random_graph(10)
+    print("generated graph:")
+    print("root", root)
+    print("graph", graph)
+    print("graphs_capacity", graphs_capacity)
     print()
-    write_directed_graph_to_file("", "../zaj 5/graph.txt", root, graph, graphs_capacity)
-    root, graph, graphs_capacity = read_directed_graph_from_file("", "../zaj 5/graph.txt")
-    print(root, graph)
-    print(graphs_capacity)
+    write_directed_graph_to_file("", "graph.txt", root, graph, graphs_capacity)
+    root, graph, graphs_capacity = read_directed_graph_from_file("", "graph.txt")
+    print("graph read from file:")
+    print("root", root)
+    print("graph", graph)
+    print("graphs_capacity", graphs_capacity)
